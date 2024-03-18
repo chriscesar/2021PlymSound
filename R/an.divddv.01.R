@@ -2,7 +2,6 @@
 # Import and analyse DDV & dive data
 
 # Set up ####
-source("R/datfol.R")
 source("R/metadata.R")
 
 ## load required packages ####
@@ -10,7 +9,6 @@ ld_pkgs <- c("tidyverse","vegan","lmerTest","rstatix", "mvabund",
              "MASS","ggtext","ggpmisc") # what packages do we need to load?
 vapply(ld_pkgs, library, logical(1L), # load them and display TRUE/FALSE if loaded
        character.only = TRUE, logical.return = TRUE);rm(ld_pkgs)
-
 
 # set data folder:
 df0 <- as_tibble(openxlsx::read.xlsx(paste0(datfol,"Data/2021 data/DDV/StillDiveLong.xlsx"), sheet = "StillDiveLong"))
