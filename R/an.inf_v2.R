@@ -31,4 +31,8 @@ if (!file.exists(destination_file)) {
 # load data
 df0 <- as_tibble(openxlsx::read.xlsx("data/in/Inf_Sed_all_years_Long_updated.xlsx",
                                      sheet = "Matched sites"))
-                 
+
+### steps
+# 1. filter out taxa to be 'discarded'
+# 2. change -9999 presence only taxa to presence-only
+# 3. 
