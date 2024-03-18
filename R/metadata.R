@@ -9,4 +9,4 @@ cbPalette <- c("#999999", "#E69F00", # colour palette for plots
                         "#F0E442", "#0072B2",
                         "#D55E00", "#CC79A7")
                         perm <- 9999 #number of permutations for analyses
-                        
+source("R/folders.R")
