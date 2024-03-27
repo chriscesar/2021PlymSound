@@ -2,7 +2,7 @@
 # Title: 
 
 # Set up ####
-source("R/datfol.R")
+# source("R/datfol.R")
 source("R/metadata.R")
 
 ## load required packages ####
@@ -243,11 +243,12 @@ pl <- ggplot(mds_scores,
   geom_text(data=spp_scores, aes(x=NMDS1, y= NMDS2,label=species_sh),
             col="grey",
             alpha=0.5,
+            size=6,
             inherit.aes = FALSE)+
   geom_segment(show.legend = FALSE,alpha=0.6)+## add 'spider legs' joining samples-centroids
   geom_point(show.legend = FALSE,colour=1,aes(fill=as.factor(Year)),
              size = 2.5)+
-  geom_textbox(#size=6,
+  geom_textbox(size=5,
     data=centroid_Site,aes(x=NMDS1,y=NMDS2,label=Year,fill=as.factor(Year)),
     width = unit(0.05, "npc"),
     inherit.aes = FALSE,show.legend = FALSE,
@@ -261,7 +262,9 @@ pl <- ggplot(mds_scores,
        y="nmMDS Axis 2")+
   geom_text_npc(aes(npcx = .99, npcy = .99, label=paste("Stress = ",
                                                         round(tmpord$stress, 3))))+
-  labs(caption=paste0(unique(wtmp$BSH)[1]," infaunal data"))
+  labs(caption=paste0(unique(wtmp$BSH)[1]," infaunal data"))+
+  theme(plot.caption = element_text(size=16,face="bold"),
+        axis.title = element_text(size=14, face="bold"))
 pl
 
 ggsave(filename = paste0("figs/infauna_",unique(wtmp$BSH)[1],"_mds.pdf"),
@@ -273,8 +276,7 @@ mv_wtmpord <- mvabund::as.mvabund(wtmpord)
 
 ##################
 ##mean-variance plot ####
-tmpfol <- "C:/Users/cc000046/tmp/"
-png(file = paste0(tmpfol,"infMeanVarA5.1.png"),
+png(file = "figs/infMeanVarA5.1.png",
     width=12*ppi, height=6*ppi, res=ppi)
 
 mvpl <- mvabund::meanvar.plot(mv_wtmpord,
@@ -328,19 +330,32 @@ ggplot(m2txl)+
        caption=paste0(unique(wtmp$BSH)[1]," BSH"))+
   theme(axis.title.y = element_blank(),
         # axis.text.x = element_blank(),
-        strip.text = element_text(face="bold")) ->pl2
+        strip.text = element_text(face="bold")) -> pl2
 
 m2txl$Year <- as.factor(m2txl$Year)
-ggplot(m2txl,aes(x=log(value+1),y=name, fill=Year, shape = Year))+
-  geom_jitter(height = 0.15,size=3, alpha = 0.4) +
+(ggplot(m2txl,aes(x=log(value+1),y=name,
+                 fill=Year,
+                 # colour=Year,stroke=1.5,
+                 shape = Year))+
+    geom_jitter(data=m2txl[,c(2:3)], inherit.aes = FALSE,
+                aes(x=log(value+1),y=name,),
+                height = 0.05,size=1, alpha = 0.5, colour = "grey") +
+    geom_jitter(height = 0.05,size=3, alpha = 0.9) +
   scale_shape_manual(values = c(21:24))+
+  # scale_shape_manual(values = c(1:3))+
   labs(x="log(Taxon abundance (n+1))",
        caption=paste0(unique(wtmp$BSH)[1]," BSH"))+
   scale_fill_manual(values = cbPalette)+
   scale_colour_manual(values = cbPalette)+
-  theme(axis.title.y = element_blank(),
+    facet_wrap(.~Year)+
+  theme(
+    legend.position = "none",
+    axis.title.y = element_blank(),
+        axis.text.y = element_text(size=12,face="italic"),
         # axis.text.x = element_blank(),
-        strip.text = element_text(face="bold")) -> pl3
+        axis.title.x = element_text(face="bold"),
+        strip.text.x = element_text(face="bold",size=12),
+        plot.caption = element_text(face="bold",size=12)) -> pl3)
 
 ggsave(filename = paste0("figs/infauna_",unique(wtmp$BSH)[1],"_relabund.pdf"),
        width = 14, height = 6, units="in",plot=pl2)
