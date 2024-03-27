@@ -2,7 +2,7 @@
 # produce ternery plot for sediment data ####
 
 # Set up ####
-source("R/datfol.R")
+# source("R/datfol.R")
 source("R/metadata.R")
 
 ## load required packages ####
@@ -119,8 +119,9 @@ TernaryPlot(
   xlim = NULL,
   ylim = NULL,
   # lab.cex = 1,
-  lab.cex = 1.5,
-  lab.font = 1,
+  # lab.cex = 1.5,
+  lab.cex = 2.5, #axis label size
+  lab.font = 2, #1 = normal, 2= bold
   tip.cex = 1,
   tip.font = 1,
   tip.col = "#000000",
@@ -144,7 +145,8 @@ TernaryPlot(
   axis.lty = "solid",
   axis.labels = TRUE,
   # axis.cex = 0.8,
-  axis.cex = 1.1,
+  # axis.cex = 1.1,
+  axis.cex = 2.5, #axis tick label size
   axis.font = 1,
   axis.rotate = TRUE,
   axis.tick = TRUE,
@@ -155,18 +157,20 @@ TernaryPlot(
   ticks.col = "#A9A9A9"
 )
 
-TernaryPoints(df0[df0$BSH_CODE=="A5.1",][,7:9], col = 1, bg = cbPalette[2], pch=21, cex=2)
-TernaryPoints(df0[df0$BSH_CODE=="A5.2",][,7:9], col = 1, bg = cbPalette[3], pch=22, cex=2)
-TernaryPoints(df0[df0$BSH_CODE=="A5.3",][,7:9], col = 1, bg = cbPalette[4], pch=23, cex=2)
-TernaryPoints(df0[df0$BSH_CODE=="A5.4",][,7:9], col = 1, bg = cbPalette[5], pch=24, cex=2)
+TernaryPoints(df0[df0$BSH_CODE=="A5.1",][,7:9], col = 1, bg = cbPalette[2], pch=21, cex=3)
+TernaryPoints(df0[df0$BSH_CODE=="A5.2",][,7:9], col = 1, bg = cbPalette[3], pch=22, cex=3)
+TernaryPoints(df0[df0$BSH_CODE=="A5.3",][,7:9], col = 1, bg = cbPalette[4], pch=23, cex=3)
+TernaryPoints(df0[df0$BSH_CODE=="A5.4",][,7:9], col = 1, bg = cbPalette[5], pch=24, cex=3)
 
-legend(x=.2,y=.905,
+legend(
+  # x=.2,y=.905,
+  x=.175,y=.905,
   # "right", 
        legend = c("A5.1 Subtidal coarse sediment",
                   "A5.2 Subtidal sand",
                   "A5.3 Subtidal mud",
                   "A5.4 Subtidal mixed sediments"),
-       cex = 1.2, bty = "n", pch = 21:24, pt.cex = 2,
+       cex = 1.75, bty = "n", pch = 21:24, pt.cex = 2,
        pt.bg = c(cbPalette[2],
                  cbPalette[3],
                  cbPalette[4],
