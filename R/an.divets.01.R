@@ -2,7 +2,7 @@
 # Import and analyse dive time series data
 
 # Set up ####
-source("R/datfol.R")
+#source("R/datfol.R")
 source("R/metadata.R")
 
 ## load packages ####
