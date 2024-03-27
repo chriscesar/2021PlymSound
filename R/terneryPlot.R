@@ -179,7 +179,7 @@ legend(
 dev.off()
 
 # tidy up ####
-rm(df,df0,pl, cbPalette,ppi,x,xpos,y,ypos,z, libfolder)
+rm(df,df0,pl, cbPalette,ppi,x,xpos,y,ypos,z,datfol_Rproj,datfol,nit,perm)
 
 detach("package:tidyverse",unload=TRUE)
 detach("package:Ternary",unload=TRUE)
