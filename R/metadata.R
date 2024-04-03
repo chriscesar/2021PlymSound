@@ -1,7 +1,7 @@
 # metadata.R ####
 # set metadata for analyses
 
-theme_set(ggthemes::theme_few())#all figs will have same style
+ggplot2::theme_set(ggthemes::theme_few())#all figs will have same style
 nit <- 200 #number of iterations
 ppi <- 300 #image resolution
 cbPalette <- c("#999999", "#E69F00", # colour palette for plots
