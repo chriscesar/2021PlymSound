@@ -38,8 +38,8 @@ ggplot(dfw[!is.na(dfw$BSH_CODE) & dfw$Year == 2021,], aes(x = BSH_CODE, y = S,gr
 # model taxon richness vs BSH ####
 summary(m01 <- lm(S ~ BSH_CODE, data = dfw[dfw$Year == 2021,]))
 anova(m01)
-sjPlot::plot_model(m01)
-report::report(m01)
+# sjPlot::plot_model(m01)
+# report::report(m01)
 
 # models of tax richness over time ####
 ## basic model
@@ -162,7 +162,7 @@ pl <- ggplot(mds_scores,
   labs(x="nmMDS Axis 1",
        y="nmMDS Axis 2")+
   geom_text_npc(aes(npcx = .99, npcy = .99, label=paste("Stress = ",
-                                                        round(ord$stress, 3))))
+                                                        round(ord$stress, 3))));pl
 
 pdf("figs/inf_mds.pdf", width=14,height = 14)
 print(pl)
@@ -264,8 +264,7 @@ pl <- ggplot(mds_scores,
                                                         round(tmpord$stress, 3))))+
   labs(caption=paste0(unique(wtmp$BSH)[1]," infaunal data"))+
   theme(plot.caption = element_text(size=16,face="bold"),
-        axis.title = element_text(size=14, face="bold"))
-pl
+        axis.title = element_text(size=14, face="bold"));pl
 
 ggsave(filename = paste0("figs/infauna_",unique(wtmp$BSH)[1],"_mds.pdf"),
        width = 14, height = 14, units="in",plot=pl)
@@ -428,11 +427,12 @@ pl <- ggplot(mds_scores,
   geom_text(data=spp_scores, aes(x=NMDS1, y= NMDS2,label=species_sh),
             col="grey",
             alpha=0.5,
+            size=6,
             inherit.aes = FALSE)+
   geom_segment(show.legend = FALSE,alpha=0.6)+## add 'spider legs' joining samples-centroids
   geom_point(show.legend = FALSE,colour=1,aes(fill=as.factor(Year)),
              size = 2.5)+
-  geom_textbox(#size=6,
+  geom_textbox(size=5,
     data=centroid_Site,aes(x=NMDS1,y=NMDS2,label=Year,fill=as.factor(Year)),
     width = unit(0.05, "npc"),
     inherit.aes = FALSE,show.legend = FALSE,
@@ -446,8 +446,9 @@ pl <- ggplot(mds_scores,
        y="nmMDS Axis 2")+
   geom_text_npc(aes(npcx = .99, npcy = .99, label=paste("Stress = ",
                                                         round(tmpord$stress, 3))))+
-  labs(caption=paste0(unique(wtmp$BSH)[1]," infaunal data"))
-pl
+  labs(caption=paste0(unique(wtmp$BSH)[1]," infaunal data"))+
+  theme(plot.caption = element_text(size=16,face="bold"),
+        axis.title = element_text(size=14, face="bold"));pl
 
 ggsave(filename = paste0("figs/infauna_",unique(wtmp$BSH)[1],"_mds.pdf"),
        width = 14, height = 14, units="in",plot=pl)
