@@ -4,14 +4,19 @@
 
 # Set up ####
 source("R/metadata.R")
-
+cbPalettetxt <- c("#994F00", "#0C7BDC", # colour palette for plots
+                           "#d41159", "#009E73",
+                           "#F0E442", "#0072B2",
+                           "#D55E00", "#CC79A7")
 ## load required packages ####
 ld_pkgs <- c("tidyverse","vegan","lmerTest","rstatix", "mvabund","tictoc",
              "MASS","ggtext","ggpmisc", "gllvm") # what packages do we need to load?
 vapply(ld_pkgs, library, logical(1L), # load them and display TRUE/FALSE if loaded
        character.only = TRUE, logical.return = TRUE);rm(ld_pkgs)
+tictoc::tic.clearlog()
 
 # Copy data:
+tic("Copying & loading data");print("Copying & loading data")
 file_name <- "Inf_Sed_all_years_Long_updated.xlsx"
 
 # Set the source and destination file paths
@@ -29,15 +34,15 @@ if (!file.exists(destination_file)) {
 }
 
 # load data
-tic()
 df0 <- as_tibble(openxlsx::read.xlsx("data/in/Inf_Sed_all_years_Long_updated.xlsx",
                                      sheet = "Matched sites"))
-toc()
+toc(log=TRUE)
 
+tic("Initial data tidy");print("Initial data tidy")
 df0 %>% rename("MatchedSite"=`2021.matched.site`) -> df0
 
 # 1. filter out taxa to be 'discarded' and tidy up MatchedSite variable
-tic();df0 %>% 
+df0 %>% 
   # change taxa flagged as -999 to values of 1. Consider removal of these taxa if required
   mutate(Abund = ifelse(Abund == -999, 1, Abund)) %>%
   # filter(.,Abund != 0) %>% #remove 'zero' abundances
@@ -63,10 +68,11 @@ tic();df0 %>%
     Northing,#potential issues with condensing data
     Taxon, # not needed
     Area
-    )) -> dfl0;toc()
+    )) -> dfl0;toc(log=TRUE)
 
 #2. Calculate mean by sampling event and widen
-
+tic("Calc means across reps, widen for analysis, export")
+print("Calc means across reps, widen for analysis, export")
 # Function to identify numeric columns containing only zero values
 contains_only_zero <- function(x) {
   is_numeric <- is.numeric(x)
@@ -74,7 +80,7 @@ contains_only_zero <- function(x) {
   is_numeric && all_zero
 }
 
-tic();dfl0 %>%
+dfl0 %>%
   group_by(across(-Abund)) %>% 
   summarise(Abund=mean(Abund),.groups = "drop") %>% #summarise abundances by station/year
   ungroup() %>% 
@@ -82,49 +88,81 @@ tic();dfl0 %>%
   filter(., !is.na(BSH)) %>% ## remove empty BSH values
   pivot_wider(names_from = Taxon.USE,
               values_from = Abund,values_fill = 0) %>% 
-  dplyr::select(where(~!contains_only_zero(.))) -> dfw;toc() # remove columns summing to zero
+  dplyr::select(where(~!contains_only_zero(.))) %>% 
+  ungroup() -> dfw # remove columns summing to zero
+
+write.csv(dfw,file="outputs/infauna_wide.csv",row.names = FALSE)
+toc(log=TRUE)
 
 # 3. Run ordination
 ## create taxon-only data and feed into ordination
+tic("Run ordination across all years")
+print("Run ordination across all years")
 set.seed(22); dfw %>% 
   dplyr::select(.,-c(MatchedSite:BSH_CODE)) %>% metaMDS(., trymax = 200) -> ord
-plot(ord)## this version is across all years
+# plot(ord)## this version is across all years
+toc(log=TRUE)
 
 ## create taxon-only data and feed into ordination
+tic("Run ordination for 2021")
+print("Run ordination for 2021")
 set.seed(22); dfw %>% 
   filter(.,Year==2021) %>% # retain current year only
   dplyr::select(where(~!contains_only_zero(.))) %>% 
   dplyr::select(.,-c(MatchedSite:BSH_CODE)) %>% 
   metaMDS(., trymax = 200) -> ord
 plot(ord)## this version is for 2021 only
+toc(log=TRUE)
 
+tic("Extract ordination data for plotting");print("Extract ordination data for plotting")
 ### plot ordination through ggplot
 ## extract Site scores
 mds_scores <- as_tibble(as.data.frame(scores(ord,"site")))
-mds_scores$BSH <- dfw %>% 
-  filter(.,Year==2021) %>% # retain current year only
-  dplyr::select(where(~!contains_only_zero(.))) %>% 
-  dplyr::select(.,BSH_CODE)
-mds_scores$station <- dfw %>% 
-  filter(.,Year==2021) %>% # retain current year only
-  dplyr::select(where(~!contains_only_zero(.))) %>% 
-  dplyr::select(.,MatchedSite)
+# mds_scores$BSH <- dfw %>% 
+#   filter(.,Year==2021) %>% # retain current year only
+#   dplyr::select(where(~!contains_only_zero(.))) %>% 
+#   dplyr::select(.,BSH_CODE)
+mds_scores$BSH <- dfw$BSH_CODE[dfw$Year==2021]
+mds_scores$Station <- dfw$MatchedSite[dfw$Year==2021]
+# mds_scores$station <- dfw %>% 
+#   filter(.,Year==2021) %>% # retain current year only
+#   dplyr::select(where(~!contains_only_zero(.))) %>% 
+#   dplyr::select(.,MatchedSite)
 
 ### extract species scores and groups
 spp_scores <- as.data.frame(scores(ord, "species"))  #Using the scores function from vegan to extract the species scores and convert to a data.frame
 spp_scores$species <- rownames(spp_scores)  # create a column of species, from the rownames of species.scores
 spp_scores$species_sh <- make.cepnames(spp_scores$species)
 
+pdf("figs/inf_mds_all_2021.pdf", width=14,height = 14)
 mds_scores %>% 
   ggplot(.,aes(x=NMDS1, y=NMDS2))+
   geom_text(data=spp_scores,
-            aes(x=NMDS1, y= NMDS2,label=species_sh),
-            col=2,
-            size=2)+
+            aes(
+              x=NMDS1,
+              y= NMDS2,
+              label=species_sh
+              ),
+            col="darkgrey",
+            size=4, show.legend = FALSE, alpha = 0.5)+
   geom_text(aes(
-    # label=station$MatchedSite
-    label=BSH$BSH_CODE
+    label=Station,
+    colour=BSH
     ),
-            fontface=2)+
+    size=8,
+    fontface=2)+
   geom_text_npc(aes(npcx = .99, npcy = .99, label=paste("Stress = ",
-                                                        round(ord$stress, 3))))
+                                                        round(ord$stress, 3))))+
+  scale_colour_manual(values = cbPalettetxt)+
+  theme(
+    legend.title = element_text(face=2),
+    legend.text = element_text(face=2))
+dev.off()
+
+toc(log=TRUE)
+unlist(tic.log())
+
+# tidy
+rm(mds_scores,ord,spp_scores)
+
+# Analyses by BSH ####
