@@ -234,13 +234,13 @@ for(bshcode in unique(dfw_trim$BSH_CODE)) {
           legend.text = element_text(face=2),
           legend.title = element_text(face=2))
   
-  ggsave(filename = paste0("figs/infauna_",unique(bsh_data$BSH)[1],"_mds.pdf"),
+  ggsave(filename = paste0("figs/infauna_",unique(bsh_data$BSH)[1],"_mds.png"),
          width = 14, height = 14, units="in",plot=pl)
   rm(bsh_data,bsh_dataord,bsh_dataordout,mds_scores,pl,spp_scores,bshcode)
 }
 toc(log=TRUE)
 
-## dsdsd ####
+## MVABUND ####
 tic("ANALYSES by BSH: Run gllvm models by BSH")
 dfw_trim <- dfw %>% filter(., BSH_CODE != "A5.1") %>% 
   dplyr::select_if(where( ~ !is.numeric(.) || sum(.) !=0))
@@ -259,9 +259,36 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
     dplyr::select(-c(1:12)) -> bsh_dataord
     # mvabund::mvabund(.)-> bsh_dataord
   
+  ### produce meanvar plot
+  png(file = paste0("figs/infMeanVar.",unique(bsh_data$BSH)[1],".png"),
+      width=12*ppi, height=6*ppi, res=ppi)
+  mvpl <- mvabund::meanvar.plot(mvabund(bsh_dataord),
+                                xlab="Mean",
+                                ylab="Variance",
+                                table=TRUE)
+  
+  # Step 1: Find the minimum and maximum values
+  min_value <- min(mvpl[,2])
+  max_value <- max(mvpl[,2])
+  
+  min_order <- floor(log10(min_value))
+  max_order <- floor(log10(max_value))
+  orders_of_magnitude_covered <- max_order - min_order
+  
+  ttl <- paste0("Very strong mean-variance relationship in invertebrate abundances in the ", unique(bsh_data$BSH)[1]," broadscale habitat")
+  sbtt <- paste0("Variance within the dataset covers *",orders_of_magnitude_covered," orders of magnitude*.")
+  
+  mtext(side=3, line = 1, at =-0.07, adj=0, cex = 1, ttl, font=1)
+  mtext(side=3, line = 0.25, at =-0.07, adj=0, cex = 0.7, sbtt)
+  
+  dev.off()
+  rm(min_order,max_order,mvpl,min_value,max_value,orders_of_magnitude_covered,ttl,sbtt)
+  
   ## run model
-  fit.glm <- manyglm(mvabund::as.mvabund(bsh_dataord) ~ bsh_data$Year, family = "negative.binomial");summary(fit.glm)
+  fit.glm <- manyglm(mvabund::as.mvabund(bsh_dataord) ~ bsh_data$Year, family = "negative.binomial")
+  fit.glm.summary <- summary(fit.glm)
   saveRDS(fit.glm, file = paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".rdat"))
+  saveRDS(fit.glm.summary,file=paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".summary.rdat"))
   fit.glm.out <- mvabund::anova.manyglm(fit.glm,p.uni = "adjusted")
   saveRDS(fit.glm.out, file = paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".pw.rdat"))
   
