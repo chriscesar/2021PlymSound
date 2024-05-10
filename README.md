@@ -6,7 +6,7 @@ Analysis of data for Plymouth Sound
 * ~~"Site" column indicates which samples have replicates. e.g., "PLYMS11a,b and c"~~
 * ~~Before analysis, will need to calculate mean abundances (including 0s!) across reps~~
 * ~~Increase text size on nMDS plots~~
-* ~~Relative abundance plots: Increase all text sizes and contrast plot colours
+* ~~Relative abundance plots: Increase all text sizes and contrast plot colours~~
 * ~~use updated data in openxlsx::readxlsx(paste0(fol,"Data/2021 data/Infauna/Updated/"),
 sheet = "Matched sites"); These data have been matched up by location (using 2021 site names). with Tamar & Yealm sites removed~~
 * ~~reproduce MDS plots using values in "2021 matched site" to display sites instead of points~~
