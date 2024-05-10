@@ -111,7 +111,7 @@ set.seed(22); dfw %>%
   dplyr::select(where(~!contains_only_zero(.))) %>% 
   dplyr::select(.,-c(MatchedSite:BSH_CODE)) %>% 
   metaMDS(., trymax = 200) -> ord
-plot(ord)## this version is for 2021 only
+#plot(ord)## this version is for 2021 only
 toc(log=TRUE)
 
 tic("DATA IMPORT: Extract ordination data for plotting");print("Extract ordination data for plotting")
@@ -240,15 +240,16 @@ for(bshcode in unique(dfw_trim$BSH_CODE)) {
 }
 toc(log=TRUE)
 
-## MVABUND ####
-tic("ANALYSES by BSH: Run gllvm models by BSH")
+# MVABUNDS ####
+tic("ANALYSES by BSH: Run mvabund models by BSH")
 dfw_trim <- dfw %>% filter(., BSH_CODE != "A5.1") %>% 
   dplyr::select_if(where( ~ !is.numeric(.) || sum(.) !=0))
 
 for (bshcode in unique(dfw_trim$BSH_CODE)) {
-  
   # subset data by BSH
   bsh_data <- subset(dfw_trim, BSH_CODE == bshcode)
+  
+  tic(paste0(unique(bsh_data$BSH_CODE)[1], " prep data"))
   
   ## remove 'empty' columns
   bsh_data <- bsh_data %>%
@@ -259,7 +260,10 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
     dplyr::select(-c(1:12)) -> bsh_dataord
     # mvabund::mvabund(.)-> bsh_dataord
   
-  ### produce meanvar plot
+  toc(log=TRUE)
+  
+  ## produce meanvar plot ####
+  tic(paste0(unique(bsh_data$BSH_CODE)[1], " create meanvar plot"))
   png(file = paste0("figs/infMeanVar.",unique(bsh_data$BSH)[1],".png"),
       width=12*ppi, height=6*ppi, res=ppi)
   mvpl <- mvabund::meanvar.plot(mvabund(bsh_dataord),
@@ -283,8 +287,10 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
   
   dev.off()
   rm(min_order,max_order,mvpl,min_value,max_value,orders_of_magnitude_covered,ttl,sbtt)
+  toc(log=TRUE)
   
-  ## run model
+  # run model ####
+  tic(paste0(unique(bsh_data$BSH_CODE)[1], " fit manyglm"))
   fit.glm <- manyglm(mvabund::as.mvabund(bsh_dataord) ~ bsh_data$Year, family = "negative.binomial")
   fit.glm.summary <- summary(fit.glm)
   saveRDS(fit.glm, file = paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".rdat"))
@@ -307,6 +313,10 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
     relocate(Year) %>% #move Year to start
     pivot_longer(cols = c(2:ncol(.)))
   
+  toc(log=TRUE)
+  
+  tic(paste0(unique(bsh_data$BSH_CODE)[1], " produce ggplots"))
+  # produce plots ####
   ggplot(m2txl)+
     geom_boxplot(aes(x=name,y=value),varwidth = TRUE)+
     facet_wrap(.~Year)+
@@ -318,7 +328,7 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
           strip.text = element_text(face="bold")) -> pl2
   
   m2txl$Year <- as.factor(m2txl$Year)
-  (ggplot(m2txl,aes(x=log(value+1),y=name,
+  ggplot(m2txl,aes(x=log(value+1),y=name,
                     fill=Year,
                     # colour=Year,stroke=1.5,
                     shape = Year))+
@@ -344,20 +354,38 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
         # plot.caption = element_text(face="bold",size=12),
         plot.title.position = "plot",
         plot.title = element_text(face="bold",size=14)
-        ) -> pl3)
+        ) -> pl3
   
   ggsave(filename = paste0("figs/infauna_",unique(bsh_data$BSH)[1],"_relabund.pdf"),
          width = 14, height = 6, units="in",plot=pl2)
   ggsave(filename = paste0("figs/infauna_",unique(bsh_data$BSH)[1],"_relabund_ver2.pdf"),
          width = 14, height = 6, units="in",plot=pl3)
+  toc()
+  
+  # ANOSIM ####
+  tic(paste0(unique(bsh_data$BSH_CODE)[1], " run ANOSIM model"))
+  fit.anosim <- vegan::anosim(bsh_dataord, group=bsh_data$Year, distance = "bray",permutations = perm)
+  saveRDS(fit.anosim, file = paste0("outputs/anosim.inf.",
+                                    unique(bsh_data$BSH_CODE)[1],".rdat"))
+  toc(log=TRUE)
+  
+  # ADONIS2 ####
+  tic(paste0(unique(bsh_data$BSH_CODE)[1], " run PERMANOVA model"))
+  fit.adonis2 <- vegan::adonis2(bsh_dataord ~ bsh_data$Year,permutations = perm)
+  saveRDS(fit.adonis2, file = paste0("outputs/adonis2.inf.",
+                                     unique(bsh_data$BSH_CODE)[1],".rdat"))
+  toc(log=TRUE)
+  
+  # SIMPER ####
+  tic(paste0(unique(bsh_data$BSH_CODE)[1], " run SIMPER"))
+  fit.simper <- vegan::simper(bsh_dataord, group=bsh_data$Year)
+  saveRDS(fit.simper, file = paste0("outputs/simper.inf.",
+                                    unique(bsh_data$BSH_CODE)[1],".rdat"))
+  toc(log = TRUE)
+  
 }
 
 toc(log=TRUE)
 
 unlist(tic.log())
-
-##############################################################
-
-
-rm(wtmp,wtmpord,mv_wtmpord,m2,m2out,m2tx,m2txl,pl2,pl3)
 
