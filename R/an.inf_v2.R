@@ -332,29 +332,33 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
                     fill=Year,
                     # colour=Year,stroke=1.5,
                     shape = Year))+
-      geom_jitter(data=m2txl[,c(2:3)], inherit.aes = FALSE,
-                  aes(x=log(value+1),y=name,),
-                  height = 0.05,size=1, alpha = 0.5, colour = "grey") +
-      geom_jitter(height = 0.05,size=3, alpha = 0.9) +
-      scale_shape_manual(values = c(21:24))+
-      # scale_shape_manual(values = c(1:3))+
-      labs(title = paste0(unique(bsh_data$BSH)[1]," BSH"),
-           x="log(Taxon abundance (n+1))",
-           caption="Each facet displays the abundance data for each of the taxa which showed significant differences by year.
-           Taxon abundances for a given year are displayed by larger, coloured icons.")+
-      scale_fill_manual(values = cbPalette)+
-      scale_colour_manual(values = cbPalette)+
-      facet_wrap(.~Year)+
-      theme(
-        legend.position = "none",
-        axis.title.y = element_blank(),
-        axis.text.y = element_text(size=12,face="italic"),
-        axis.title.x = element_text(face="bold"),
-        strip.text.x = element_text(face="bold",size=12),
-        # plot.caption = element_text(face="bold",size=12),
-        plot.title.position = "plot",
-        plot.title = element_text(face="bold",size=14)
-        ) -> pl3
+    geom_hline(yintercept = seq(from=1.5,
+                                to=(length(unique(m2txl$name))-.5),
+                                by=1),
+               colour="lightgrey", linetype=2) +
+    geom_jitter(data=m2txl[,c(2:3)], inherit.aes = FALSE,
+                aes(x=log(value+1),y=name,),
+                height = 0.05,size=1, alpha = 0.5, colour = "grey") +
+    geom_jitter(height = 0.05,size=3, alpha = 0.9) +
+    scale_shape_manual(values = c(21:24))+
+    # scale_shape_manual(values = c(1:3))+
+    labs(title = paste0(unique(bsh_data$BSH)[1]," BSH"),
+         x="log(Taxon abundance (n+1))",
+         caption=paste0("Displayed taxa are the ",paste0(length(names(m2tmp1[m2tmp1<0.056])))," taxa which showed significantly clear differences in abundances between years.\n",
+                        "Taxon abundances across all years are presented in each facet, with abundances for a given year displayed by larger, coloured icons."))+
+    scale_fill_manual(values = cbPalette)+
+    scale_colour_manual(values = cbPalette)+
+    facet_wrap(.~Year)+
+    scale_y_discrete(limits=rev)+
+    theme(
+      legend.position = "none",
+      axis.title.y = element_blank(),
+      axis.text.y = element_text(size=12,face="italic"),
+      axis.title.x = element_text(face="bold"),
+      strip.text.x = element_text(face="bold",size=12),
+      plot.title.position = "plot",
+      plot.title = element_text(face="bold",size=14)
+      ) -> pl3
   
   ggsave(filename = paste0("figs/infauna_",unique(bsh_data$BSH)[1],"_relabund.pdf"),
          width = 14, height = 6, units="in",plot=pl2)
@@ -389,3 +393,13 @@ toc(log=TRUE)
 
 (x <- unlist(tic.log()))
 saveRDS(x, file = "outputs/an.inf_v2.R.log.rdat")
+
+### check against PSA ####
+dfw_metadata <- dfw[, c(1:5, 9:12)]
+dfw_sediment <- dfw[, 6:8]
+dfw_species <- dfw[, 13:677]
+data_list <- list(metadata = dfw_metadata, sediment = mvabund(dfw_sediment), species = mvabund(dfw_species))
+rm(dfw_metadata,dfw_sediment,dfw_species)
+
+fit <- manylm(data_list$species ~ data_list$sediment)
+summary(fit)
