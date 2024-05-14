@@ -387,5 +387,5 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
 
 toc(log=TRUE)
 
-unlist(tic.log())
-
+(x <- unlist(tic.log()))
+saveRDS(x, file = "outputs/an.inf_v2.R.log.rdat")
