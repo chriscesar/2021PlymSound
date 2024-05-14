@@ -37,8 +37,6 @@ for (bshcode in unique(df$BSH_CODE)) {
   
   tic(paste0(unique(bsh_data$BSH_CODE)[1], " prep data"))
 
-  # png(file=paste0("figs/PSA_BSH_.",unique(bsh_data$BSH)[1],".png"),
-  #     width=12*ppi, height=12*ppi, res=ppi)
   ggplot(data=bsh_data,
        aes(Mud,
            Gravel,
@@ -48,19 +46,21 @@ for (bshcode in unique(df$BSH_CODE)) {
     theme_bw() +
     theme_showarrows() + custom_percent('%') + 
     geom_mask() +
-    geom_text(aes(label=MatchedSiteYr),show.legend = F,
+    geom_text(aes(label=MatchedSite),show.legend = T,
               fontface=2) + 
     labs(Tarrow = "Gravel",
          Larrow = "Mud",
          Rarrow = "Sand")+
+    scale_colour_manual("Year", values=cbPalette)+
     labs(title = paste0(unique(bsh_data$BSH)[1]," BSH"),
          caption = "Sample identities coloured by sample year")+
     theme(axis.title = element_text(face=2),
-          plot.title = element_text(hjust=0.5,vjust=0,face="bold"))
+          legend.title = element_text(face=2),
+          plot.title = element_text(hjust=0.5,vjust=0,face="bold",margin=margin(0,0,-20,0)))
+    
   ggsave(filename = paste0("figs/PSA_BSH_.",unique(bsh_data$BSH)[1],".png"),
          device = "png",
          width=10, height=10, units = "in")
-  # dev.off()
   toc(log=TRUE)
 }
 
