@@ -15,6 +15,6 @@ sheet = "Matched sites"); These data have been matched up by location (using 202
 * Perform ANOSIM, using site ID as a predictor (might need to chat with customer)
   * current version analyses with mvabund.  Consider retaining that analysis and discuss the difference (if any)?
 * Need to see how sediments are changing at specific sites
-  * maybe reproduce Ternary plots? Linking samples from same station, but different years?
+  * ~~maybe reproduce Ternary plots? Linking samples from same station, but different years?~~
   * could also run RDA plot with PSA data as a predictor?
   * could run gllvm with PSA data as a predictor? (or possibly incorporate taxon data and HMSC?)
