@@ -237,6 +237,8 @@ for(bshcode in unique(dfw_trim$BSH_CODE)) {
   ggsave(filename = paste0("figs/infauna_",unique(bsh_data$BSH)[1],"_mds.png"),
          width = 14, height = 14, units="in",plot=pl)
   rm(bsh_data,bsh_dataord,bsh_dataordout,mds_scores,pl,spp_scores,bshcode)
+  flush.console()
+  
 }
 toc(log=TRUE)
 
@@ -386,6 +388,7 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
   saveRDS(fit.simper, file = paste0("outputs/simper.inf.",
                                     unique(bsh_data$BSH_CODE)[1],".rdat"))
   toc(log = TRUE)
+  flush.console()
   
 }
 
