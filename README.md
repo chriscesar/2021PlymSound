@@ -18,3 +18,5 @@ sheet = "Matched sites"); These data have been matched up by location (using 202
   * ~~maybe reproduce Ternary plots? Linking samples from same station, but different years?~~
   * could also run RDA plot with PSA data as a predictor?
   * could run gllvm with PSA data as a predictor? (or possibly incorporate taxon data and HMSC?)
+* is there an analogue to the R statistic (ANOSIM) in mvabund? e.g., how much variability is explained by the model?
+  *OR: lit review to see how others have explained MVABUND (because SIMPER sucks)
