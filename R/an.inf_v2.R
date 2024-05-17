@@ -477,11 +477,11 @@ toc(log=TRUE)
 saveRDS(x, file = "outputs/an.inf_v2.R.log.rdat")
 
 ### check against PSA ####
-dfw_metadata <- dfw[, c(1:5, 9:12)]
-dfw_sediment <- dfw[, 6:8]
-dfw_species <- dfw[, 13:677]
-data_list <- list(metadata = dfw_metadata, sediment = mvabund(dfw_sediment), species = mvabund(dfw_species))
-rm(dfw_metadata,dfw_sediment,dfw_species)
-
-fit <- manylm(data_list$species ~ data_list$sediment)
-summary(fit)
+# dfw_metadata <- dfw[, c(1:5, 9:12)]
+# dfw_sediment <- dfw[, 6:8]
+# dfw_species <- dfw[, 13:677]
+# data_list <- list(metadata = dfw_metadata, sediment = mvabund(dfw_sediment), species = mvabund(dfw_species))
+# rm(dfw_metadata,dfw_sediment,dfw_species)
+# 
+# fit <- manylm(data_list$species ~ data_list$sediment)
+# summary(fit)
