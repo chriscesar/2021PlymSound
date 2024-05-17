@@ -24,8 +24,9 @@ df0 %>%
 df %>% 
   mutate(Gravel = GRAVELPCT/100,
          Sand=SANDPCT/100,
-         Mud=MUDPCT/100) %>% 
-  filter(., !is.na(BSH_CODE))-> df
+         Mud=MUDPCT/100,
+         MatchedSiteYr_sh = paste0(MatchedSite,"_",substr(Year,3,4))) %>% 
+  filter(., !is.na(BSH_CODE)) -> df
 toc(log=TRUE)
 
 # Plot by BSH
@@ -54,6 +55,7 @@ for (bshcode in unique(df$BSH_CODE)) {
     scale_colour_manual("Year", values=cbPalette)+
     labs(title = paste0(unique(bsh_data$BSH)[1]," BSH"),
          caption = "Sample identities coloured by sample year")+
+    # geom_line(aes(group = MatchedSite),colour="darkgrey") +# Add this line to connect points
     theme(axis.title = element_text(face=2),
           legend.title = element_text(face=2),
           plot.title = element_text(hjust=0.5,vjust=0,face="bold",margin=margin(0,0,-20,0)))
@@ -62,7 +64,26 @@ for (bshcode in unique(df$BSH_CODE)) {
          device = "png",
          width=10, height=10, units = "in")
   toc(log=TRUE)
+  flush.console()
 }
 
+# plot all sites ####
+tic("Plot all sites & all years")
+df %>% 
+  ggplot(.,aes(Mud,
+               Gravel,
+               Sand,
+               colour=as.factor(BSH_CODE))) +
+  coord_tern()+
+  theme_bw() +
+  theme_showarrows() + custom_percent('%') + 
+  geom_mask() +
+  geom_text(aes(label=MatchedSiteYr_sh),show.legend = T,
+            fontface=2)+
+  geom_line(aes(group = MatchedSite),colour="darkgrey") # Add this line to connect points
+
 toc(log=TRUE)
-unlist(tic.log())
+toc(log=TRUE)
+
+(x <- unlist(tic.log()))
+saveRDS(x, file = "outputs/terneryPlot_v2.R.log.rdat")
