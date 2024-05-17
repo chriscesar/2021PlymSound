@@ -99,8 +99,8 @@ toc(log=TRUE)
 tic("DATA IMPORT: Run ordination across all years")
 print("Run ordination across all years")
 set.seed(22); dfw %>% 
-  dplyr::select(.,-c(MatchedSite:BSH_CODE)) %>% metaMDS(., trymax = 200) -> ord
-# plot(ord)## this version is across all years
+  dplyr::select(.,-c(MatchedSite:BSH_CODE)) %>% metaMDS(., trymax = 200) -> ord_all
+# plot(ord_all)## this version is across all years
 toc(log=TRUE)
 
 ## create taxon-only data and feed into ordination
@@ -114,7 +114,7 @@ set.seed(22); dfw %>%
 #plot(ord)## this version is for 2021 only
 toc(log=TRUE)
 
-tic("DATA IMPORT: Extract ordination data for plotting");print("Extract ordination data for plotting")
+tic("DATA IMPORT: Extract ordination data for plotting (2021)");print("Extract ordination data for plotting (2021)")
 ### plot ordination through ggplot
 ## extract Site scores
 mds_scores <- as_tibble(as.data.frame(scores(ord,"site")))
@@ -164,6 +164,60 @@ toc(log=TRUE)
 # tidy
 rm(mds_scores,ord,spp_scores)
 
+tic("DATA IMPORT: Extract ordination data for plotting (All years)");print("Extract ordination data for plotting (All years)")
+### plot ordination through ggplot
+## extract Site scores
+mds_scores <- as_tibble(as.data.frame(scores(ord_all,"site")))
+mds_scores$BSH <- dfw$BSH_CODE
+mds_scores$Year <- dfw$Year
+mds_scores$Station <- dfw$MatchedSite
+
+### extract species scores and groups
+spp_scores <- as.data.frame(scores(ord_all, "species"))  #Using the scores function from vegan to extract the species scores and convert to a data.frame
+spp_scores$species <- rownames(spp_scores)  # create a column of species, from the rownames of species.scores
+spp_scores$species_sh <- make.cepnames(spp_scores$species)
+
+pdf("figs/inf_mds_all_allYears.pdf", width=14,height = 14)
+mds_scores %>%
+  ggplot(.,aes(x=NMDS1, y=NMDS2))+
+  geom_text(data=spp_scores,
+            aes(
+              x=NMDS1,
+              y= NMDS2,
+              label=species_sh
+            ),
+            col="darkgrey",
+            size=4, show.legend = FALSE, alpha = 0.5)+
+  geom_line(aes(group = Station),
+            colour=1,alpha = 0.5) +# Add this line to connect points
+  geom_text(data = . %>% filter(Year==2011),
+            aes(label=Station,col=BSH),fontface=1, size=7, show.legend = FALSE)+
+  geom_text(data = . %>% filter(Year==2015),
+            aes(label=Station, col=BSH),fontface=3, size=7, show.legend = FALSE)+
+  geom_text(data = . %>% filter(Year==2021),
+            aes(label=Station,col=BSH),fontface=2, size=10, show.legend = FALSE)+
+  geom_text(data = mds_scores, aes(label=NA,col=BSH),fontface=1, size=7) +
+  geom_text_npc(aes(npcx = .99, npcy = .99, label=paste("Stress = ",
+                                                        round(ord_all$stress, 3))))+
+  scale_colour_manual(values = cbPalettetxt)+
+  labs(x="nmMDS Axis 1",
+       y="nmMDS Axis 2",
+       caption="Based on Bray Curtis similarities of log(n+1) transformed abundances.
+       Large, bold labels = 2021, italic labels = 2015, smaller labels = 2011.
+       Lines connect samples from individual sites.",
+       title="NMDS of infaunal data between 2011 and 2021")  +
+  theme(
+    legend.title = element_text(face=2),
+    legend.text = element_text(face=2),
+    axis.title = element_text(face=2))
+
+dev.off()
+
+toc(log=TRUE)
+
+# tidy
+rm(mds_scores,ord,spp_scores)
+
 # Temporal ordinations by BSH (FOR LOOP) ####
 ## remove 5.1 (only 2 samples)
 tic("ANALYSES by BSH: Ordinations by BSH")
@@ -184,7 +238,9 @@ for(bshcode in unique(dfw_trim$BSH_CODE)) {
     dplyr::select(-c(1:12)) -> bsh_dataord
   
   #Run ordination
-  set.seed(80);bsh_dataordout <- metaMDS(bsh_dataord, try = 30, trymax = 200,k=2)
+  # untransformed # set.seed(80);bsh_dataordout <- metaMDS(bsh_dataord, try = 30, trymax = 200,k=2)
+  # log (n+1) transformed
+  set.seed(80);bsh_dataordout <- metaMDS(log(bsh_dataord+1), try = 30, trymax = 200,k=2)
   
   ### ordination plot ####
   ### extract site scores and groups
@@ -228,11 +284,18 @@ for(bshcode in unique(dfw_trim$BSH_CODE)) {
                                   round(bsh_dataordout$stress, 3))))+
     labs(x="nmMDS Axis 1",
          y="nmMDS Axis 2",
-         caption=paste0(unique(bsh_data$BSH)[1]," infaunal data"))+
-    theme(plot.caption = element_text(size=16,face="bold"),
-          axis.title = element_text(size=14, face="bold"),
-          legend.text = element_text(face=2),
-          legend.title = element_text(face=2))
+         caption="Based on Bray Curtis similarities of log(n+1) transformed abundances",
+         # paste0(unique(bsh_data$BSH)[1]," infaunal data"),
+         title=paste0(unique(bsh_data$BSH)[1]," infaunal data")
+         )+
+    theme(
+      plot.title.position = "plot",
+      plot.title = element_text(face="bold",size=14),
+      #plot.caption = element_text(size=16,face="bold"),
+      axis.title = element_text(size=16, face="bold"),
+      legend.text = element_text(face=2),
+      legend.title = element_text(face=2)
+      );pl
   
   ggsave(filename = paste0("figs/infauna_",unique(bsh_data$BSH)[1],"_mds.png"),
          width = 14, height = 14, units="in",plot=pl)
@@ -241,6 +304,8 @@ for(bshcode in unique(dfw_trim$BSH_CODE)) {
   
 }
 toc(log=TRUE)
+
+# MDS of all sites over time ####
 
 # MVABUNDS ####
 tic("ANALYSES by BSH: Run mvabund models by BSH")
@@ -293,11 +358,14 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
   
   # run model ####
   tic(paste0(unique(bsh_data$BSH_CODE)[1], " fit manyglm"))
-  fit.glm <- manyglm(mvabund::as.mvabund(bsh_dataord) ~ bsh_data$Year, family = "negative.binomial")
+  ## untransformed
+  # fit.glm <- manyglm(mvabund::as.mvabund(bsh_dataord) ~ bsh_data$Year, family = "negative.binomial")
+  ## log(n+1) transformed
+  fit.glm <- manyglm(mvabund::as.mvabund(log(bsh_dataord+1)) ~ bsh_data$Year, family = "negative.binomial")
   fit.glm.summary <- summary(fit.glm)
   saveRDS(fit.glm, file = paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".rdat"))
   saveRDS(fit.glm.summary,file=paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".summary.rdat"))
-  fit.glm.out <- mvabund::anova.manyglm(fit.glm,p.uni = "adjusted")
+  fit.glm.out <- mvabund::anova.manyglm(fit.glm,p.uni = "adjusted", test="LR")
   saveRDS(fit.glm.out, file = paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".pw.rdat"))
   
   m2tmp1 <- t(as.data.frame(fit.glm.out$uni.p))[,2]
@@ -370,21 +438,32 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
   
   # ANOSIM ####
   tic(paste0(unique(bsh_data$BSH_CODE)[1], " run ANOSIM model"))
-  fit.anosim <- vegan::anosim(bsh_dataord, group=bsh_data$Year, distance = "bray",permutations = perm)
+  # untransfomed
+  # fit.anosim <- vegan::anosim(bsh_dataord, group=bsh_data$Year, distance = "bray",permutations = perm)
+  # log (n+1) transformed
+  fit.anosim <- vegan::anosim(log(bsh_dataord+1), group=bsh_data$Year, distance = "bray",permutations = perm)
   saveRDS(fit.anosim, file = paste0("outputs/anosim.inf.",
                                     unique(bsh_data$BSH_CODE)[1],".rdat"))
   toc(log=TRUE)
   
   # ADONIS2 ####
   tic(paste0(unique(bsh_data$BSH_CODE)[1], " run PERMANOVA model"))
-  fit.adonis2 <- vegan::adonis2(bsh_dataord ~ bsh_data$Year,permutations = perm)
+  # untransformed
+  # fit.adonis2 <- vegan::adonis2(bsh_dataord ~ bsh_data$Year,permutations = perm)
+  # transformed
+  fit.adonis2 <- vegan::adonis2(log(bsh_dataord+1) ~ bsh_data$Year,permutations = perm)
   saveRDS(fit.adonis2, file = paste0("outputs/adonis2.inf.",
                                      unique(bsh_data$BSH_CODE)[1],".rdat"))
   toc(log=TRUE)
   
   # SIMPER ####
   tic(paste0(unique(bsh_data$BSH_CODE)[1], " run SIMPER"))
-  fit.simper <- vegan::simper(bsh_dataord, group=bsh_data$Year)
+  # untransformed
+  # fit.simper <- vegan::simper(bsh_dataord, group=bsh_data$Year,
+  #                             permutations = perm)
+  # transformed
+  fit.simper <- vegan::simper(log(bsh_dataord+1), group=bsh_data$Year,
+                              permutations = perm)
   saveRDS(fit.simper, file = paste0("outputs/simper.inf.",
                                     unique(bsh_data$BSH_CODE)[1],".rdat"))
   toc(log = TRUE)
