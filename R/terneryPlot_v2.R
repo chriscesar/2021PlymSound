@@ -7,7 +7,7 @@ cbPalettetxt <- c("#994F00", "#0C7BDC", # colour palette for plots
                            "#d41159", "#009E73",
                            "#F0E442", "#0072B2",
                            "#D55E00", "#CC79A7")
-                           ## load required packages ####
+## load required packages ####
 ld_pkgs <- c("grid","tidyverse","tictoc","ggtern") # what packages do we need to load?
 vapply(ld_pkgs, library, logical(1L), # load them and display TRUE/FALSE if loaded
        character.only = TRUE, logical.return = TRUE);rm(ld_pkgs)
@@ -58,7 +58,8 @@ for (bshcode in unique(df$BSH_CODE)) {
     # geom_line(aes(group = MatchedSite),colour="darkgrey") +# Add this line to connect points
     theme(axis.title = element_text(face=2),
           legend.title = element_text(face=2),
-          plot.title = element_text(hjust=0.5,vjust=0,face="bold",margin=margin(0,0,-20,0)))
+          plot.title = element_text(hjust=0.5,vjust=0,face="bold",margin=margin(0,0,-20,0)),
+          legend.position = c(.9, .5))
     
   ggsave(filename = paste0("figs/PSA_BSH_.",unique(bsh_data$BSH)[1],".png"),
          device = "png",
@@ -78,9 +79,18 @@ df %>%
   theme_bw() +
   theme_showarrows() + custom_percent('%') + 
   geom_mask() +
+  geom_line(aes(group = MatchedSite),colour="darkgrey") +# Add this line to connect points
   geom_text(aes(label=MatchedSiteYr_sh),show.legend = T,
             fontface=2)+
-  geom_line(aes(group = MatchedSite),colour="darkgrey") # Add this line to connect points
+  scale_colour_manual("BSH", values=cbPalette)+
+  theme(axis.title = element_text(face=2),
+        legend.title = element_text(face=2),
+        plot.title = element_text(hjust=0.5,vjust=0,face="bold",margin=margin(0,0,-20,0)),
+        legend.position = c(.9, .5))
+  
+ggsave(filename = paste0("figs/PSA_BSH_all_years.png"),
+       device = "png",
+       width=10, height=10, units = "in")
 
 toc(log=TRUE)
 toc(log=TRUE)
