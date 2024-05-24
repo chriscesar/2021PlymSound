@@ -23,3 +23,4 @@ sheet = "Matched sites"); These data have been matched up by location (using 202
 * is there an analogue to the R statistic (ANOSIM) in mvabund? e.g., how much variability is explained by the model?
   * OR: lit review to see how others have explained MVABUND
   * There is no direct analogue to Rsquared with multivariate abundance data.
+* Create appendix/section discussing strengths of mvabund approach & why we've used it as opposed to ANOSIM ('borrow' from Dave warton's book)
