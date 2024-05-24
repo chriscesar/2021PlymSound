@@ -17,6 +17,9 @@ sheet = "Matched sites"); These data have been matched up by location (using 202
 * Need to see how sediments are changing at specific sites
   * ~~maybe reproduce Ternary plots? Linking samples from same station, but different years?~~
   * could also run RDA plot with PSA data as a predictor?
+    * Hold fire for now
   * could run gllvm with PSA data as a predictor? (or possibly incorporate taxon data and HMSC?)
+    * Hold fire for now
 * is there an analogue to the R statistic (ANOSIM) in mvabund? e.g., how much variability is explained by the model?
   * OR: lit review to see how others have explained MVABUND
+  * There is no direct analogue to Rsquared with multivariate abundance data.
