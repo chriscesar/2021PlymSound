@@ -78,7 +78,7 @@ dfw_trim <- dfw %>% filter(., BSH_CODE != "A5.1") %>%
 # bsh_data <- subset(dfw_trim, BSH_CODE == "A5.2")
 
 ## remove 'empty' columns
-bsh_data <- bsh_data %>%
+bsh_data <- dfw_trim %>%
   dplyr::select_if(where( ~ !is.numeric(.) || sum(.) !=0)) ## remove numeric variables that sum to 0
 
 # create data for ordination
@@ -96,7 +96,9 @@ dfw %>%
 fit.glm_A5.2 <- readRDS("outputs/mvabund.inf.A5.2.rdat")
 fit.glm.summary_A5.2 <- readRDS("outputs/mvabund.inf.A5.2.summary.rdat")
 fit.glm.out_A5.2 <- readRDS("outputs/mvabund.inf.A5.2.pw.rdat")
-
+fit.anosim_A5.2 <- readRDS("outputs/anosim.inf.A5.2.rdat")
+fit.adonis2 <- readRDS("outputs/adonis2.inf.A5.2.rdat")
+fit.simper_A5.2 <- readRDS("outputs/simper.inf.A5.2.rdat")
 yr_A5.2 <- dfA5.2$Year
 x_A5.2 <- mvabund(dfA5.2[,-c(1)])
 
