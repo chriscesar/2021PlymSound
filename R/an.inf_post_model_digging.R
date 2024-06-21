@@ -102,6 +102,20 @@ fit.simper_A5.2 <- readRDS("outputs/simper.inf.A5.2.rdat")
 yr_A5.2 <- dfA5.2$Year
 x_A5.2 <- mvabund(dfA5.2[,-c(1)])
 
+## taxa per year:
+print(paste0(ncol(x_A5.2)," unique taxa recorded in the A5.2 BSH across all sampling years"))
+
+## by year:
+dfA5.2 %>%
+  pivot_longer(
+    cols = -Year,
+    names_to = "Species",
+    values_to = "Abundance"
+  ) %>% 
+  filter(Abundance > 0) %>%
+  group_by(Year) %>%
+  summarise(SpeciesCount = n_distinct(Species))
+
 (best_rsq_A5.2 <- mvabund::best.r.sq(x_A5.2 ~ yr_A5.2))
 
 ## A5.3 ####
@@ -118,6 +132,21 @@ fit.glm.out_A5.3 <- readRDS("outputs/mvabund.inf.A5.3.pw.rdat")
 yr_A5.3 <- dfA5.3$Year
 x_A5.3 <- mvabund(dfA5.3[,-c(1)])
 
+## taxa per year:
+print(paste0(ncol(x_A5.3)," unique taxa recorded in the A5.3 BSH across all sampling years"))
+
+## by year:
+dfA5.3 %>%
+  pivot_longer(
+    cols = -Year,
+    names_to = "Species",
+    values_to = "Abundance"
+  ) %>% 
+  filter(Abundance > 0) %>%
+  group_by(Year) %>%
+  summarise(SpeciesCount = n_distinct(Species))
+
+
 (best_rsq_A5.3 <- mvabund::best.r.sq(x_A5.3 ~ yr_A5.3))
 
 ## A5.4 ####
@@ -132,6 +161,20 @@ fit.glm.out_A5.4 <- readRDS("outputs/mvabund.inf.A5.4.pw.rdat")
 
 yr_A5.4 <- dfA5.4$Year
 x_A5.4 <- mvabund(dfA5.4[,-c(1)])
+
+## taxa per year:
+print(paste0(ncol(x_A5.4)," unique taxa recorded in the A5.4 BSH across all sampling years"))
+
+## by year:
+dfA5.4 %>%
+  pivot_longer(
+    cols = -Year,
+    names_to = "Species",
+    values_to = "Abundance"
+  ) %>% 
+  filter(Abundance > 0) %>%
+  group_by(Year) %>%
+  summarise(SpeciesCount = n_distinct(Species))
 
 (best_rsq_A5.4 <- mvabund::best.r.sq(x_A5.4 ~ yr_A5.4))
 
