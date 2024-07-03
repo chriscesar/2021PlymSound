@@ -365,7 +365,7 @@ for (bshcode in unique(dfw_trim$BSH_CODE)) {
   fit.glm.summary <- summary(fit.glm)
   saveRDS(fit.glm, file = paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".rdat"))
   saveRDS(fit.glm.summary,file=paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".summary.rdat"))
-  fit.glm.out <- mvabund::anova.manyglm(fit.glm,p.uni = "adjusted", test="LR")
+  fit.glm.out <- mvabund::anova.manyglm(fit.glm,p.uni = "adjusted", test="LR",show.time="all")
   saveRDS(fit.glm.out, file = paste0("outputs/mvabund.inf.",unique(bsh_data$BSH_CODE)[1],".pw.rdat"))
   
   m2tmp1 <- t(as.data.frame(fit.glm.out$uni.p))[,2]
